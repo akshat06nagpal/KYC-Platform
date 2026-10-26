@@ -1,7 +1,7 @@
 import time
 from typing import List
 
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -31,7 +31,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-UPLOAD_DIR = "uploads"
+UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 init_db()
@@ -114,7 +114,9 @@ async def liveness_burst_endpoint(frames: List[UploadFile] = File(...)):
 
 
 @app.post("/hand-check")
-async def hand_endpoint(frame: UploadFile = File(...), hand: str = "left"):
+async def hand_endpoint(frame: UploadFile = File(...), hand: str = Form("left")):
+    if hand not in {"left", "right"}:
+        raise HTTPException(status_code=422, detail="hand must be 'left' or 'right'")
     frame_path = None
     try:
         frame_path = await save_upload(frame, f"{uuid.uuid4().hex}_hand.jpg")

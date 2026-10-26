@@ -98,7 +98,7 @@ def scan_document(doc_path: str):
 
         if not doc_found:
             return {
-                "status": "pass",
+                "status": "fail",
                 "document_detected": False,
                 "mrz_found": False,
                 "quality_score": round(min(laplacian_var / 300 * 100, 100), 1),

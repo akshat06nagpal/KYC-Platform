@@ -13,7 +13,6 @@ from config import (
 )
 
 _face_cascade = None
-_model = None
 
 
 def _get_cascade():
@@ -24,12 +23,6 @@ def _get_cascade():
         )
     return _face_cascade
 
-
-def _get_model():
-    global _model
-    if _model is None:
-        _model = DeepFace.build_model("VGG-Face")
-    return _model
 
 
 def _has_face(img) -> bool:
@@ -68,13 +61,12 @@ def verify_face(selfie_path: str, id_photo_path: str):
             img1_path=selfie_path,
             img2_path=id_photo_path,
             model_name="VGG-Face",
-            model=_get_model(),
             enforce_detection=False,
             detector_backend="opencv",
             threshold=FACE_MATCH_THRESHOLD,
         )
         distance = result.get("distance", 1.0)
-        confidence = round(max(0.0, (1 - distance)) * 100, 2)
+        confidence = round(float(result.get("confidence", max(0.0, 1 - distance) * 100)), 2)
         verified = bool(result.get("verified", False))
         return {
             "match": verified,
